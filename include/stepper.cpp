@@ -72,7 +72,6 @@ public:
 
     void limitStop()
     {
-
         if ((this->state == State::moovingForwards) & this->canMoveForwards)
         {
             return;
