@@ -32,31 +32,31 @@ struct circular_motion_t
         return this->current_segment[i] <= this->number_of_segments && number_of_segments != 0;
     }
 
-    float calculate_angular_travel(float center_to_current_position[2], float target_position[2], float center_position[2], bool is_clockwise)
+    float calculate_full_arc_lenght(float center_to_current_position[2], float target_position[2], float center_position[2], bool is_clockwise)
     {
         float distance_from_center_to_target_position[2] = {
             target_position[0] - center_position[0],
             target_position[1] - center_position[1]};
 
-        float angular_travel = atan2(
+        float full_arc_lenght = atan2(
             center_to_current_position[0] * distance_from_center_to_target_position[1] - center_to_current_position[1] * distance_from_center_to_target_position[0],
             center_to_current_position[0] * distance_from_center_to_target_position[0] + center_to_current_position[1] * distance_from_center_to_target_position[1]);
 
-        if (is_clockwise && angular_travel >= 0)
+        if (is_clockwise && full_arc_lenght >= 0)
         {
-            return angular_travel - 2 * PI;
+            return full_arc_lenght - 2 * PI;
         }
-        if (!is_clockwise && angular_travel <= 0)
+        if (!is_clockwise && full_arc_lenght <= 0)
         {
-            return angular_travel + 2 * PI;
+            return full_arc_lenght + 2 * PI;
         }
 
-        return angular_travel;
+        return full_arc_lenght;
     }
 
-    int calculate_number_of_segments(float angular_travel, float radius)
+    int calculate_number_of_segments(float full_arc_lenght, float radius)
     {
-        return floor(fabs(0.5 * angular_travel * radius) / sqrt(this->precision * (2 * radius - this->precision)));
+        return floor(fabs(0.5 * full_arc_lenght * radius) / sqrt(this->precision * (2 * radius - this->precision)));
     }
 
     void setup(float initial_position[2], float target_position[2], float initial_distance_to_center[2], float radius, bool is_clockwise, float feed_rate)
@@ -78,18 +78,18 @@ struct circular_motion_t
         this->center_to_current_position[0] = -initial_distance_to_center[0];
         this->center_to_current_position[1] = -initial_distance_to_center[1];
 
-        float angular_travel = calculate_angular_travel(center_to_current_position, target_position, center_position, is_clockwise);
+        float full_arc_lenght = calculate_full_arc_lenght(center_to_current_position, target_position, center_position, is_clockwise);
 
         this->current_segment[0] = 0;
         this->current_segment[1] = 0;
-        this->number_of_segments = calculate_number_of_segments(angular_travel, radius);
+        this->number_of_segments = calculate_number_of_segments(full_arc_lenght, radius);
 
         if (number_of_segments)
         {
-            this->theta_per_segment = angular_travel / number_of_segments;
+            this->theta_per_segment = full_arc_lenght / number_of_segments;
 
-            this->current_velocity[0] = fabs(sin(angular_travel)) * this->feed_rate;
-            this->current_velocity[0] = fabs(cos(angular_travel)) * this->feed_rate;
+            this->current_velocity[0] = fabs(sin(full_arc_lenght)) * this->feed_rate;
+            this->current_velocity[0] = fabs(cos(full_arc_lenght)) * this->feed_rate;
         }
     }
 
