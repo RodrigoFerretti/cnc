@@ -12,7 +12,7 @@ public:
         CCLOCKWISE = 1,
     };
 
-    Arc(float initialPosition[2], float finalPosition[2], float centerToInitialPosition[2], Rotation rotation)
+    Arc(float initialPosition[2], float finalPosition[2], float centerToInitialPosition[2], bool rotation)
     {
         this->initialPosition[0] = initialPosition[0];
         this->initialPosition[1] = initialPosition[1];
@@ -66,7 +66,7 @@ private:
     int segments;
     float radius;
     float lenght;
-    Rotation rotation;
+    bool rotation;
     float segmentLenght;
 
     float finalPosition[2];
