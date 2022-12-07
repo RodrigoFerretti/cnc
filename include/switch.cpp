@@ -26,7 +26,7 @@ public:
 private:
     int pin;
     int debounceTime;
+    int previousReadTime;
 
     bool previousRead;
-    int previousReadTime;
 };

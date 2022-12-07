@@ -1,5 +1,6 @@
 #include "AccelStepper.h"
 #include "switch.cpp"
+#include "arc.cpp"
 
 #define STEPPER_X0_PUL_PIN 26
 #define STEPPER_X0_DIR_PIN 25
@@ -19,27 +20,20 @@
 
 class Stepper : public AccelStepper
 {
-    enum State
-    {
-        stopped = 0,
-        moovingForwards = 1,
-        moovingBackwards = 2,
-    };
-
 public:
-    Stepper(int pulPin, int dirPin, int backSwitchPin, int frontSwitchPin, int maxSpeed, int acceleration)
+    Stepper(int pulPin, int dirPin, int backSwitchPin, int frontSwitchPin)
         : AccelStepper(AccelStepper::FULL2WIRE, dirPin, pulPin)
     {
-        this->setMaxSpeed(maxSpeed);
-        this->setAcceleration(acceleration);
+        this->setMaxSpeed(MAX_SPEED);
+        this->setAcceleration(ACCELERATION);
 
         this->backSwitch = Switch(backSwitchPin, DEBOUNCE_TIME);
         this->frontSwitch = Switch(frontSwitchPin, DEBOUNCE_TIME);
     }
 
-    void moveWithSpeed(long distance, float speed)
+    void moveToWithSpeed(long position, double speed)
     {
-        speed = fabs(speed);
+        long distance = position - this->currentPosition();
 
         if (speed < MIN_VELOCITY_STEP)
         {
@@ -53,9 +47,28 @@ public:
             return;
         }
 
-        this->state = distance > 0 ? State::moovingBackwards : State::moovingForwards;
-        this->move(distance);
+        this->moveTo(position);
         this->setSpeed(distance > 0 ? speed : -speed);
+        this->state = distance > 0 ? MOOVING_BACKWARDS : MOOVING_FORWARDS;
+    }
+
+    void setupArcMove(Arc arc, bool axis)
+    {
+        this->arc = arc;
+        this->arcAxis = axis;
+        this->currentArcSegmentNumber = 0;
+    }
+
+    void generateArcMove()
+    {
+        if (this->arc.getSegmentCount() == this->currentArcSegmentNumber || this->distanceToGo())
+        {
+            return;
+        }
+
+        Arc::Segment segment = this->arc.getSegment(this->currentArcSegmentNumber);
+        this->moveToWithSpeed(segment.position[this->arcAxis], segment.speed[this->arcAxis]);
+        this->currentArcSegmentNumber += 1;
     }
 
     void readSwitches()
@@ -66,23 +79,23 @@ public:
 
     void rapidStop()
     {
-        this->state = State::stopped;
+        this->state = STOPPED;
         this->moveTo(this->currentPosition());
     }
 
     void limitStop()
     {
-        if ((this->state == State::moovingForwards) & this->canMoveForwards)
+        if ((this->state == MOOVING_FORWARDS) & this->canMoveForwards)
         {
             return;
         }
 
-        if ((this->state == State::moovingBackwards) & this->canMoveBackwards)
+        if ((this->state == MOOVING_BACKWARDS) & this->canMoveBackwards)
         {
             return;
         }
 
-        if (this->state == State::stopped)
+        if (this->state == STOPPED)
         {
             return;
         }
@@ -91,17 +104,28 @@ public:
     }
 
 private:
-    State state = State::stopped;
+    enum State
+    {
+        STOPPED,
+        MOOVING_FORWARDS,
+        MOOVING_BACKWARDS,
+    };
+
+    int state = STOPPED;
+    int currentArcSegmentNumber;
+
+    bool arcAxis;
+    bool canMoveForwards;
+    bool canMoveBackwards;
+
+    Arc arc;
 
     Switch backSwitch;
     Switch frontSwitch;
-
-    bool canMoveForwards;
-    bool canMoveBackwards;
 };
 
 Stepper stepper_x0(STEPPER_X0_PUL_PIN, STEPPER_X0_DIR_PIN, STEPPER_X0_BACK_SWITCH_PIN,
-                   STEPPER_X0_FRONT_SWITCH_PIN, MAX_SPEED, ACCELERATION);
+                   STEPPER_X0_FRONT_SWITCH_PIN);
 
 Stepper stepper_x1(STEPPER_X1_PUL_PIN, STEPPER_X1_DIR_PIN, STEPPER_X1_BACK_SWITCH_PIN,
-                   STEPPER_X1_FRONT_SWITCH_PIN, MAX_SPEED, ACCELERATION);
+                   STEPPER_X1_FRONT_SWITCH_PIN);

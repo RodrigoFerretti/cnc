@@ -4,21 +4,23 @@
 #include <ESPAsyncWebServer.h>
 #include "web-socket.cpp"
 
-AsyncWebServer server(80);
+#define SERVER_PORT 80
 
-struct web_server_t
+class WebServer : public AsyncWebServer
 {
-    void setup()
+public:
+    WebServer() : AsyncWebServer(SERVER_PORT)
     {
-        server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
-                  { request->send(200, "text/plain", "Hello, world"); });
+        this->on("/", HTTP_GET, [](AsyncWebServerRequest *request)
+                 { request->send(200, "text/plain", "Hello, world"); });
 
-        server.onNotFound([](AsyncWebServerRequest *request)
-                          { request->send(404, "text/plain", "Not found"); });
+        this->onNotFound([](AsyncWebServerRequest *request)
+                         { request->send(404, "text/plain", "Not found"); });
 
-        server.addHandler(&wss);
-        server.begin();
-    };
+        this->addHandler(&webSocket);
+
+        this->begin();
+    }
 };
 
-web_server_t web_server = {};
+WebServer webServer;

@@ -1,6 +1,5 @@
-#include "math.h"
+#include <Arduino.h>
 
-#define PI 3.14159265358979323846
 #define ARC_PRECISION 0.1
 
 class Arc
@@ -8,11 +7,19 @@ class Arc
 public:
     enum Rotation
     {
-        CLOCKWISE = 0,
-        CCLOCKWISE = 1,
+        CLOCKWISE,
+        COUNTER_CLOCKWISE,
     };
 
-    Arc(float initialPosition[2], float finalPosition[2], float centerToInitialPosition[2], bool rotation)
+    struct Segment
+    {
+        double position[2];
+        double speed[2];
+    };
+
+    Arc(){};
+
+    Arc(double initialPosition[2], double centerToInitialPosition[2], double finalPosition[2], double speedMagnitude, Arc::Rotation rotation)
     {
         this->initialPosition[0] = initialPosition[0];
         this->initialPosition[1] = initialPosition[1];
@@ -30,6 +37,7 @@ public:
         this->finalPosition[1] = finalPosition[1];
 
         this->rotation = rotation;
+        this->speedMagnitude = speedMagnitude;
         this->radius = sqrt(pow(centerToInitialPosition[0], 2) + pow(centerToInitialPosition[1], 2));
 
         this->lenght = atan2(
@@ -37,43 +45,53 @@ public:
             this->centerToInitialPosition[0] * this->centerToFinalPosition[0] + this->centerToInitialPosition[1] * this->centerToFinalPosition[1]);
 
         this->lenght = this->rotation == CLOCKWISE && lenght >= 0 ? lenght - 2 * PI : lenght;
-        this->lenght = this->rotation == CCLOCKWISE && lenght <= 0 ? lenght + 2 * PI : lenght;
+        this->lenght = this->rotation == COUNTER_CLOCKWISE && lenght <= 0 ? lenght + 2 * PI : lenght;
 
-        this->segments = floor(fabs(0.5 * this->lenght * this->radius) / sqrt(ARC_PRECISION * (2 * this->radius - ARC_PRECISION)));
+        this->segmentCount = floor(fabs(0.5 * this->lenght * this->radius) / sqrt(ARC_PRECISION * (2 * this->radius - ARC_PRECISION)));
 
-        this->segmentLenght = this->lenght / this->segments > 0 ? this->segments : 1;
+        this->segmentLenght = this->lenght / this->segmentCount > 0 ? this->segmentCount : 1;
     }
 
-    float *getSegmentPosition(int segment)
+    int getSegmentCount()
     {
-        float cosSegment = cos(segment * this->segmentLenght);
-        float sinSegment = sin(segment * this->segmentLenght);
+        return this->segmentCount;
+    };
 
-        float centerToSegmentPosition[2] = {
+    Arc::Segment getSegment(int index)
+    {
+        double cosSegment = cos(index * this->segmentLenght);
+        double sinSegment = sin(index * this->segmentLenght);
+
+        double centerToSegmentPosition[2] = {
             this->centerToInitialPosition[0] * cosSegment - this->centerToInitialPosition[1] * sinSegment,
             this->centerToInitialPosition[0] * sinSegment + this->centerToInitialPosition[1] * cosSegment,
         };
 
-        float *segmentPosition = new float[2];
-
-        segmentPosition[0] = this->centerPosition[0] + centerToSegmentPosition[0];
-        segmentPosition[1] = this->centerPosition[1] + centerToSegmentPosition[1];
-
-        return segmentPosition;
+        return {
+            .position = {
+                this->centerPosition[0] + centerToSegmentPosition[0],
+                this->centerPosition[1] + centerToSegmentPosition[1],
+            },
+            .speed = {
+                fabs(sinSegment) * this->speedMagnitude,
+                fabs(cosSegment) * this->speedMagnitude,
+            },
+        };
     }
 
 private:
-    int segments;
-    float radius;
-    float lenght;
-    bool rotation;
-    float segmentLenght;
+    int segmentCount;
 
-    float finalPosition[2];
-    float centerPosition[2];
-    float initialPosition[2];
-    float currentPosition[2];
+    double lenght;
+    double radius;
+    double segmentLenght;
+    double speedMagnitude;
+    double finalPosition[2];
+    double centerPosition[2];
+    double initialPosition[2];
+    double currentPosition[2];
+    double centerToFinalPosition[2];
+    double centerToInitialPosition[2];
 
-    float centerToFinalPosition[2];
-    float centerToInitialPosition[2];
+    Arc::Rotation rotation;
 };
