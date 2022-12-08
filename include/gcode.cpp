@@ -25,10 +25,16 @@ public:
 
         if (M == "00")
         {
-            stepper_x0.rapidStop();
-            stepper_x1.rapidStop();
+            stepper_x0.pause();
+            stepper_x1.pause();
 
             return;
+        }
+
+        if (M == "100")
+        {
+            stepper_x0.resume();
+            stepper_x1.resume();
         }
 
         if (G == "01")
@@ -55,8 +61,8 @@ public:
             int xArcAxis = 0;
             int yArcAxis = 1;
 
-            stepper_x0.setupArcMove(arc, xArcAxis);
-            stepper_x1.setupArcMove(arc, yArcAxis);
+            stepper_x0.arcMove(arc, xArcAxis);
+            stepper_x1.arcMove(arc, yArcAxis);
 
             return;
         }

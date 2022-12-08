@@ -18,7 +18,7 @@
 
 #define DEBOUNCE_TIME 100
 
-class Stepper : public AccelStepper
+class Stepper : private AccelStepper
 {
 public:
     Stepper(int pulPin, int dirPin, int backSwitchPin, int frontSwitchPin)
@@ -33,85 +33,80 @@ public:
 
     void moveToWithSpeed(long position, double speed)
     {
-        long distance = position - this->currentPosition();
-
         if (speed < MIN_VELOCITY_STEP)
         {
             return;
         }
 
-        bool can_move = distance > 0 ? this->canMoveBackwards : this->canMoveForwards;
+        long distance = position - this->currentPosition();
+        bool canMove = distance > 0 ? this->canMoveBackwards : this->canMoveForwards;
 
-        if (!can_move)
+        if (!canMove)
         {
             return;
         }
 
         this->moveTo(position);
         this->setSpeed(distance > 0 ? speed : -speed);
-        this->state = distance > 0 ? MOOVING_BACKWARDS : MOOVING_FORWARDS;
+        this->state = distance > 0 ? MOVING_BACKWARDS : MOVING_FORWARDS;
     }
 
-    void setupArcMove(Arc arc, bool axis)
+    void arcMove(Arc arc, bool axis)
     {
         this->arc = arc;
         this->arcAxis = axis;
         this->currentArcSegmentNumber = 0;
     }
 
-    void generateArcMove()
+    void pause()
     {
-        if (this->arc.getSegmentCount() == this->currentArcSegmentNumber || this->distanceToGo())
+        if (!this->isMoving())
         {
             return;
         }
 
-        Arc::Segment segment = this->arc.getSegment(this->currentArcSegmentNumber);
-        this->moveToWithSpeed(segment.position[this->arcAxis], segment.speed[this->arcAxis]);
-        this->currentArcSegmentNumber += 1;
+        this->state = PAUSED;
     }
 
-    void readSwitches()
+    void resume()
     {
-        this->canMoveForwards = frontSwitch.read();
-        this->canMoveBackwards = backSwitch.read();
+        if (this->state != PAUSED)
+        {
+            return;
+        }
+
+        this->state = this->distanceToGo() > 0 ? MOVING_BACKWARDS : MOVING_FORWARDS;
     }
 
-    void rapidStop()
+    void loop()
     {
-        this->state = STOPPED;
-        this->moveTo(this->currentPosition());
-    }
+        this->checkSwitches();
+        this->handleArcMove();
 
-    void limitStop()
-    {
-        if ((this->state == MOOVING_FORWARDS) & this->canMoveForwards)
+        if (!this->isMoving())
         {
             return;
         }
 
-        if ((this->state == MOOVING_BACKWARDS) & this->canMoveBackwards)
-        {
-            return;
-        }
+        bool stepped = this->runSpeedToPosition();
 
-        if (this->state == STOPPED)
+        if (!stepped)
         {
-            return;
+            this->state = IDLE;
         }
-
-        this->rapidStop();
     }
 
 private:
     enum State
     {
-        STOPPED,
-        MOOVING_FORWARDS,
-        MOOVING_BACKWARDS,
+        IDLE,
+        PAUSED,
+        LIMITED,
+        MOVING_FORWARDS,
+        MOVING_BACKWARDS,
     };
 
-    int state = STOPPED;
+    int state = IDLE;
     int currentArcSegmentNumber;
 
     bool arcAxis;
@@ -122,6 +117,52 @@ private:
 
     Switch backSwitch;
     Switch frontSwitch;
+
+    bool isMoving()
+    {
+        return this->state == MOVING_BACKWARDS || this->state == MOVING_FORWARDS;
+    }
+
+    void checkSwitches()
+    {
+        this->canMoveForwards = frontSwitch.read();
+        this->canMoveBackwards = backSwitch.read();
+
+        if (this->state == IDLE || this->state == PAUSED || this->state == LIMITED)
+        {
+            return;
+        }
+
+        if ((this->state == MOVING_FORWARDS) & this->canMoveForwards)
+        {
+            return;
+        }
+
+        if ((this->state == MOVING_BACKWARDS) & this->canMoveBackwards)
+        {
+            return;
+        }
+
+        this->state = LIMITED;
+        this->moveTo(this->currentPosition());
+    }
+
+    void handleArcMove()
+    {
+        if (this->arc.getSegmentCount() == this->currentArcSegmentNumber)
+        {
+            return;
+        }
+
+        if (this->state != IDLE)
+        {
+            return;
+        }
+
+        Arc::Segment segment = this->arc.getSegment(this->currentArcSegmentNumber);
+        this->moveToWithSpeed(segment.position[this->arcAxis], segment.speed[this->arcAxis]);
+        this->currentArcSegmentNumber += 1;
+    }
 };
 
 Stepper stepper_x0(STEPPER_X0_PUL_PIN, STEPPER_X0_DIR_PIN, STEPPER_X0_BACK_SWITCH_PIN,

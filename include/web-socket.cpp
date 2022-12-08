@@ -21,11 +21,11 @@ private:
         }
 
         AwsFrameInfo *info = (AwsFrameInfo *)arg;
+
         if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT)
         {
             data[len] = 0;
             String message = (char *)data;
-
             GCode gcode(message);
             gcode.run();
 
