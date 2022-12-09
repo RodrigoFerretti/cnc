@@ -1,5 +1,4 @@
 #include "Arduino.h"
-#include "wifi.cpp"
 #include "web-server.cpp"
 
 void setup()
