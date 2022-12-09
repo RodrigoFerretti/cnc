@@ -18,7 +18,7 @@
 
 #define DEBOUNCE_TIME 100
 
-class Stepper : private AccelStepper
+class Stepper : public AccelStepper
 {
 public:
     Stepper(int pulPin, int dirPin, int backSwitchPin, int frontSwitchPin)
