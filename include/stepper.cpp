@@ -4,31 +4,25 @@
 
 #define STEPPER_X0_PUL_PIN 26
 #define STEPPER_X0_DIR_PIN 25
-#define STEPPER_X0_BACK_SWITCH_PIN 34
-#define STEPPER_X0_FRONT_SWITCH_PIN 35
 
 #define STEPPER_X1_PUL_PIN 14
 #define STEPPER_X1_DIR_PIN 27
-#define STEPPER_X1_BACK_SWITCH_PIN 36
-#define STEPPER_X1_FRONT_SWITCH_PIN 39
 
 #define MAX_SPEED 15000
 #define ACCELERATION 20000
 #define MIN_VELOCITY_STEP 0.01
 
-#define DEBOUNCE_TIME 100
-
 class Stepper : public AccelStepper
 {
 public:
-    Stepper(int pulPin, int dirPin, int backSwitchPin, int frontSwitchPin)
+    Stepper(int pulPin, int dirPin, Switch *backSwitch, Switch *frontSwitch)
         : AccelStepper(AccelStepper::FULL2WIRE, dirPin, pulPin)
     {
         this->setMaxSpeed(MAX_SPEED);
         this->setAcceleration(ACCELERATION);
 
-        this->backSwitch = Switch(backSwitchPin, DEBOUNCE_TIME);
-        this->frontSwitch = Switch(frontSwitchPin, DEBOUNCE_TIME);
+        this->backSwitch = backSwitch;
+        this->frontSwitch = frontSwitch;
     }
 
     void moveToWithSpeed(long position, double speed)
@@ -78,7 +72,7 @@ public:
         this->state = this->distanceToGo() > 0 ? MOVING_BACKWARDS : MOVING_FORWARDS;
     }
 
-    void loop()
+    void step()
     {
         this->checkSwitches();
         this->handleArcMove();
@@ -88,9 +82,9 @@ public:
             return;
         }
 
-        bool stepped = this->runSpeedToPosition();
+        this->runSpeedToPosition();
 
-        if (!stepped)
+        if (this->distanceToGo() == 0)
         {
             this->state = IDLE;
         }
@@ -115,8 +109,8 @@ private:
 
     Arc arc;
 
-    Switch backSwitch;
-    Switch frontSwitch;
+    Switch *backSwitch;
+    Switch *frontSwitch;
 
     bool isMoving()
     {
@@ -125,8 +119,8 @@ private:
 
     void checkSwitches()
     {
-        this->canMoveForwards = frontSwitch.read();
-        this->canMoveBackwards = backSwitch.read();
+        this->canMoveForwards = this->frontSwitch->getRead();
+        this->canMoveBackwards = this->backSwitch->getRead();
 
         if (this->state == IDLE || this->state == PAUSED || this->state == LIMITED)
         {
@@ -165,8 +159,5 @@ private:
     }
 };
 
-Stepper stepper_x0(STEPPER_X0_PUL_PIN, STEPPER_X0_DIR_PIN, STEPPER_X0_BACK_SWITCH_PIN,
-                   STEPPER_X0_FRONT_SWITCH_PIN);
-
-Stepper stepper_x1(STEPPER_X1_PUL_PIN, STEPPER_X1_DIR_PIN, STEPPER_X1_BACK_SWITCH_PIN,
-                   STEPPER_X1_FRONT_SWITCH_PIN);
+Stepper x0Stepper(STEPPER_X0_PUL_PIN, STEPPER_X0_DIR_PIN, &x0BackSwitch, &x0FrontSwitch);
+Stepper x1Stepper(STEPPER_X1_PUL_PIN, STEPPER_X1_DIR_PIN, &x1BackSwitch, &x1FrontSwitch);

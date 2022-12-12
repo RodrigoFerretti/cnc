@@ -10,6 +10,10 @@ class WebServer : public AsyncWebServer
 public:
     WebServer() : AsyncWebServer(SERVER_PORT)
     {
+    }
+
+    void setup()
+    {
         this->on("/", HTTP_GET, [](AsyncWebServerRequest *request)
                  { request->send(200, "text/plain", "Hello, world"); });
 

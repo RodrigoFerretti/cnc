@@ -4,14 +4,17 @@
 #define WIFI_NETWORK "DOJA&NINA 2.4G"
 #define WIFI_PASSWORD "Gatinhas123"
 
-class WIFI : public WiFiClass
+class WIFI
 {
 public:
-    WIFI() : WiFiClass()
+    WIFI()
+    {
+    }
+
+    void setup()
     {
         this->configureStaticIP();
-        this->mode(WIFI_STA);
-        this->begin(WIFI_NETWORK, WIFI_PASSWORD);
+        this->connect();
     }
 
 private:
@@ -23,7 +26,20 @@ private:
         IPAddress primaryDNS(8, 8, 8, 8);
         IPAddress secondaryDNS(8, 8, 4, 4);
 
-        this->config(localIP, gateway, subnet, primaryDNS, secondaryDNS);
+        WiFi.config(localIP, gateway, subnet, primaryDNS, secondaryDNS);
+    }
+
+    void connect()
+    {
+        WiFi.mode(WIFI_STA);
+        WiFi.begin(WIFI_NETWORK, WIFI_PASSWORD);
+
+        while (WiFi.status() != WL_CONNECTED)
+        {
+            delay(500);
+        }
+
+        Serial.println("WiFi connected!");
     }
 };
 

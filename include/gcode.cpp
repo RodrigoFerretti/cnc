@@ -24,30 +24,30 @@ public:
 
         if (M == "00")
         {
-            stepper_x0.pause();
-            stepper_x1.pause();
+            x0Stepper.pause();
+            x1Stepper.pause();
 
             return;
         }
 
         if (M == "100")
         {
-            stepper_x0.resume();
-            stepper_x1.resume();
+            x0Stepper.resume();
+            x1Stepper.resume();
         }
 
         if (G == "01")
         {
-            stepper_x0.moveToWithSpeed(X, F);
-            stepper_x1.moveToWithSpeed(X, F);
+            x0Stepper.moveToWithSpeed(X, F);
+            x1Stepper.moveToWithSpeed(X, F);
 
             return;
         }
 
         if (G == "02" || G == "03")
         {
-            double xCurrentPosition = (double)stepper_x0.currentPosition();
-            double yCurrentPosition = (double)stepper_x1.currentPosition();
+            double xCurrentPosition = (double)x0Stepper.currentPosition();
+            double yCurrentPosition = (double)x1Stepper.currentPosition();
 
             double initialPosition[2] = {xCurrentPosition, yCurrentPosition};
             double centerToInitialPosition[2] = {-I, -J};
@@ -58,10 +58,9 @@ public:
             Arc arc = Arc(initialPosition, centerToInitialPosition, finalPosition, speedMagnitude, rotation);
 
             int xArcAxis = 0;
-            int yArcAxis = 1;
 
-            stepper_x0.arcMove(arc, xArcAxis);
-            stepper_x1.arcMove(arc, yArcAxis);
+            x0Stepper.arcMove(arc, xArcAxis);
+            x1Stepper.arcMove(arc, xArcAxis);
 
             return;
         }
