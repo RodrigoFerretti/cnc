@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include "stepper.cpp"
+#include "multi-stepper.cpp"
 
 class GCode
 {
@@ -17,53 +17,49 @@ public:
         String M = this->letterValue("M");
 
         double X = this->letterValue("X").toFloat();
-        double Y = this->letterValue("Y").toFloat();
-        double I = this->letterValue("I").toFloat();
-        double J = this->letterValue("J").toFloat();
+        // double Y = this->letterValue("Y").toFloat();
+        // double I = this->letterValue("I").toFloat();
+        // double J = this->letterValue("J").toFloat();
         double F = this->letterValue("F").toFloat();
 
         if (M == "00")
         {
-            x0Stepper.pause();
-            x1Stepper.pause();
-
+            multiStepper.pause();
             return;
         }
 
         if (M == "100")
         {
-            x0Stepper.resume();
-            x1Stepper.resume();
+            multiStepper.resume();
+            return;
         }
 
         if (G == "01")
         {
-            x0Stepper.moveToWithSpeed(X, F);
-            x1Stepper.moveToWithSpeed(X, F);
-
+            multiStepper.linearMove(X, F);
             return;
         }
 
-        if (G == "02" || G == "03")
-        {
-            double xCurrentPosition = (double)x0Stepper.currentPosition();
-            double yCurrentPosition = (double)x1Stepper.currentPosition();
+        // if (G == "02" || G == "03")
+        // {
+        //     double xCurrentPosition = (double)x0Stepper.currentPosition();
+        //     double yCurrentPosition = (double)x1Stepper.currentPosition();
 
-            double initialPosition[2] = {xCurrentPosition, yCurrentPosition};
-            double centerToInitialPosition[2] = {-I, -J};
-            double finalPosition[2] = {X, Y};
-            double speedMagnitude = F;
+        //     double initialPosition[2] = {xCurrentPosition, yCurrentPosition};
+        //     double centerToInitialPosition[2] = {-I, -J};
+        //     double finalPosition[2] = {X, Y};
+        //     double speedMagnitude = F;
 
-            Arc::Rotation rotation = G == "02" ? Arc::Rotation::COUNTER_CLOCKWISE : Arc::Rotation::COUNTER_CLOCKWISE;
-            Arc arc = Arc(initialPosition, centerToInitialPosition, finalPosition, speedMagnitude, rotation);
+        //     Arc::Rotation rotation = G == "02" ? Arc::Rotation::COUNTER_CLOCKWISE : Arc::Rotation::COUNTER_CLOCKWISE;
+        //     Arc arc = Arc(initialPosition, centerToInitialPosition, finalPosition, speedMagnitude, rotation);
 
-            int xArcAxis = 0;
+        //     int xArcAxis = 0;
 
-            x0Stepper.arcMove(arc, xArcAxis);
-            x1Stepper.arcMove(arc, xArcAxis);
+        //     x0Stepper.arcMove(arc, xArcAxis);
+        //     x1Stepper.arcMove(arc, xArcAxis);
 
-            return;
-        }
+        //     return;
+        // }
     };
 
 private:

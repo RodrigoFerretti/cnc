@@ -2,11 +2,17 @@
 #include "switch.cpp"
 #include "arc.cpp"
 
-#define STEPPER_X0_PUL_PIN 26
-#define STEPPER_X0_DIR_PIN 25
+#define X0_PUL_PIN 26
+#define X0_DIR_PIN 25
+// #define X0_ENA_PIN 00
+#define X0_BSW_PIN 34
+#define X0_FSW_PIN 35
 
-#define STEPPER_X1_PUL_PIN 14
-#define STEPPER_X1_DIR_PIN 27
+#define X1_PUL_PIN 14
+#define X1_DIR_PIN 27
+// #define X1_ENA_PIN 00
+#define X1_BSW_PIN 36
+#define X1_FSW_PIN 39
 
 #define MAX_SPEED 15000
 #define ACCELERATION 20000
@@ -15,14 +21,16 @@
 class Stepper : public AccelStepper
 {
 public:
-    Stepper(int pulPin, int dirPin, Switch *backSwitch, Switch *frontSwitch)
-        : AccelStepper(AccelStepper::FULL2WIRE, dirPin, pulPin)
+    Stepper() {}
+
+    Stepper(int pulsePin, int directionPin, int backSwitchPin, int frontSwitchPin)
+        : AccelStepper(AccelStepper::FULL2WIRE, directionPin, pulsePin)
     {
         this->setMaxSpeed(MAX_SPEED);
         this->setAcceleration(ACCELERATION);
 
-        this->backSwitch = backSwitch;
-        this->frontSwitch = frontSwitch;
+        this->backSwitch = Switch(backSwitchPin);
+        this->frontSwitch = Switch(frontSwitchPin);
     }
 
     void moveToWithSpeed(long position, double speed)
@@ -33,6 +41,12 @@ public:
         }
 
         long distance = position - this->currentPosition();
+
+        if (distance == 0)
+        {
+            return;
+        }
+
         bool canMove = distance > 0 ? this->canMoveBackwards : this->canMoveForwards;
 
         if (!canMove)
@@ -45,16 +59,31 @@ public:
         this->state = distance > 0 ? MOVING_BACKWARDS : MOVING_FORWARDS;
     }
 
-    void arcMove(Arc arc, bool axis)
+    void limitStop()
     {
-        this->arc = arc;
-        this->arcAxis = axis;
-        this->currentArcSegmentNumber = 0;
+        this->state = LIMITED;
+        this->moveTo(this->currentPosition());
+    }
+
+    bool isMoving()
+    {
+        return this->distanceToGo();
+    }
+
+    bool canMove()
+    {
+        return this->canMoveBackwards && this->canMoveForwards;
+    }
+
+    void readSwitches()
+    {
+        this->canMoveBackwards = this->backSwitch.read();
+        this->canMoveForwards = this->frontSwitch.read();
     }
 
     void pause()
     {
-        if (!this->isMoving())
+        if (this->state == LIMITED)
         {
             return;
         }
@@ -69,24 +98,33 @@ public:
             return;
         }
 
+        if (this->distanceToGo() == 0)
+        {
+            this->state = IDLE;
+            return;
+        }
+
         this->state = this->distanceToGo() > 0 ? MOVING_BACKWARDS : MOVING_FORWARDS;
     }
 
     void step()
     {
-        this->checkSwitches();
-        this->handleArcMove();
-
-        if (!this->isMoving())
+        if (this->state == PAUSED)
         {
             return;
         }
 
         this->runSpeedToPosition();
 
+        if (this->state == IDLE)
+        {
+            return;
+        }
+
         if (this->distanceToGo() == 0)
         {
             this->state = IDLE;
+            return;
         }
     }
 
@@ -101,63 +139,12 @@ private:
     };
 
     int state = IDLE;
-    int currentArcSegmentNumber;
-
-    bool arcAxis;
     bool canMoveForwards;
     bool canMoveBackwards;
 
-    Arc arc;
-
-    Switch *backSwitch;
-    Switch *frontSwitch;
-
-    bool isMoving()
-    {
-        return this->state == MOVING_BACKWARDS || this->state == MOVING_FORWARDS;
-    }
-
-    void checkSwitches()
-    {
-        this->canMoveForwards = this->frontSwitch->getRead();
-        this->canMoveBackwards = this->backSwitch->getRead();
-
-        if (this->state == IDLE || this->state == PAUSED || this->state == LIMITED)
-        {
-            return;
-        }
-
-        if ((this->state == MOVING_FORWARDS) & this->canMoveForwards)
-        {
-            return;
-        }
-
-        if ((this->state == MOVING_BACKWARDS) & this->canMoveBackwards)
-        {
-            return;
-        }
-
-        this->state = LIMITED;
-        this->moveTo(this->currentPosition());
-    }
-
-    void handleArcMove()
-    {
-        if (this->arc.getSegmentCount() == this->currentArcSegmentNumber)
-        {
-            return;
-        }
-
-        if (this->state != IDLE)
-        {
-            return;
-        }
-
-        Arc::Segment segment = this->arc.getSegment(this->currentArcSegmentNumber);
-        this->moveToWithSpeed(segment.position[this->arcAxis], segment.speed[this->arcAxis]);
-        this->currentArcSegmentNumber += 1;
-    }
+    Switch backSwitch;
+    Switch frontSwitch;
 };
 
-Stepper x0Stepper(STEPPER_X0_PUL_PIN, STEPPER_X0_DIR_PIN, &x0BackSwitch, &x0FrontSwitch);
-Stepper x1Stepper(STEPPER_X1_PUL_PIN, STEPPER_X1_DIR_PIN, &x1BackSwitch, &x1FrontSwitch);
+Stepper x0Stepper(X0_PUL_PIN, X0_DIR_PIN, X0_BSW_PIN, X0_FSW_PIN);
+Stepper x1Stepper(X1_PUL_PIN, X1_DIR_PIN, X1_BSW_PIN, X1_FSW_PIN);
