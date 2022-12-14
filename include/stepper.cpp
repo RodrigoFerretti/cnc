@@ -21,7 +21,9 @@
 class Stepper : public AccelStepper
 {
 public:
-    Stepper() {}
+    Stepper()
+    {
+    }
 
     Stepper(int pulsePin, int directionPin, int backSwitchPin, int frontSwitchPin)
         : AccelStepper(AccelStepper::FULL2WIRE, directionPin, pulsePin)

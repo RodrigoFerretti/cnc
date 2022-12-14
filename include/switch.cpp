@@ -5,7 +5,9 @@
 class Switch
 {
 public:
-    Switch() {}
+    Switch()
+    {
+    }
 
     Switch(int pin)
     {

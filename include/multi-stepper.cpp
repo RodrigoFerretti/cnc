@@ -3,7 +3,9 @@
 class MultiStepper
 {
 public:
-    MultiStepper() {}
+    MultiStepper()
+    {
+    }
 
     MultiStepper(Stepper x0Stepper, Stepper x1Stepper /*, Stepper y0Stepper, Stepper z0Stepper*/)
     {

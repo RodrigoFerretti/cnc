@@ -1,10 +1,11 @@
-#include <Arduino.h>
 #include "multi-stepper.cpp"
 
 class GCode
 {
 public:
-    GCode(){};
+    GCode()
+    {
+    }
 
     GCode(String command)
     {

@@ -12,7 +12,9 @@ public:
         double speed[2];
     };
 
-    Arc(){};
+    Arc()
+    {
+    }
 
     Arc(double initialPosition[2], double initialDistanceToCenter[2], double finalPosition[2], double speedMagnitude, bool isClockWise, double arcPrecision = ARC_PRECISION)
     {

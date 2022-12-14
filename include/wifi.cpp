@@ -1,5 +1,4 @@
 #include <WiFi.h>
-#include "Arduino.h"
 
 #define WIFI_NETWORK "DOJA&NINA 2.4G"
 #define WIFI_PASSWORD "Gatinhas123"
