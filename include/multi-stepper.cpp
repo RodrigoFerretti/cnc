@@ -13,7 +13,7 @@ public:
         // this->z0Stepper = z0Stepper;
     }
 
-    void linearMove(long xPosition, /* long yPosition, long zPosition, */ double feedRate)
+    void linearMove(double position[3], double feedRate)
     {
         if (this->isMoving())
         {
@@ -25,10 +25,23 @@ public:
             return;
         }
 
-        this->x0Stepper.moveToWithSpeed(xPosition, feedRate);
-        this->x1Stepper.moveToWithSpeed(xPosition, feedRate);
-        // this->y0Stepper.moveToWithSpeed(yPosition, feedRate);
-        // this->z0Stepper.moveToWithSpeed(zPosition, feedRate);
+        this->x0Stepper.moveToWithSpeed(position[0], feedRate);
+        this->x1Stepper.moveToWithSpeed(position[0], feedRate);
+        // this->y0Stepper.moveToWithSpeed(position[1], feedRate);
+        // this->z0Stepper.moveToWithSpeed(position[2], feedRate);
+    }
+
+    void arcMove(double finalPosition[3], double distanceToCenter[3], double feedRate, bool isClockWise)
+    {
+        double currentPosition[3] = {
+            (double)this->x0Stepper.currentPosition(),
+        };
+
+        Arc arc(currentPosition, distanceToCenter, finalPosition, feedRate, isClockWise);
+
+        this->x0Stepper.arcMove(arc, 0);
+        this->x1Stepper.arcMove(arc, 0);
+        // this->y0Stepper.arcMove(arc, 1);
     }
 
     void pause()

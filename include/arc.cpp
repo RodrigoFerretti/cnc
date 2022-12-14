@@ -1,6 +1,6 @@
 #include <Arduino.h>
 
-#define ARC_PRECISION 0.1
+#define ARC_PRECISION 0.01
 
 class Arc
 {
@@ -19,16 +19,16 @@ public:
 
     Arc(){};
 
-    Arc(double initialPosition[2], double centerToInitialPosition[2], double finalPosition[2], double speedMagnitude, Arc::Rotation rotation)
+    Arc(double initialPosition[2], double initialDistanceToCenter[2], double finalPosition[2], double speedMagnitude, bool isClockWise)
     {
         this->initialPosition[0] = initialPosition[0];
         this->initialPosition[1] = initialPosition[1];
 
-        this->centerToInitialPosition[0] = centerToInitialPosition[0];
-        this->centerToInitialPosition[1] = centerToInitialPosition[1];
+        this->centerToInitialPosition[0] = -initialDistanceToCenter[0];
+        this->centerToInitialPosition[1] = -initialDistanceToCenter[1];
 
-        this->centerPosition[0] = this->initialPosition[0] - centerToInitialPosition[0];
-        this->centerPosition[1] = this->initialPosition[1] - centerToInitialPosition[1];
+        this->centerPosition[0] = this->initialPosition[0] + initialDistanceToCenter[0];
+        this->centerPosition[1] = this->initialPosition[1] + initialDistanceToCenter[1];
 
         this->centerToFinalPosition[0] = this->finalPosition[0] - this->centerPosition[0];
         this->centerToFinalPosition[1] = this->finalPosition[1] - this->centerPosition[1];
@@ -36,9 +36,9 @@ public:
         this->finalPosition[0] = finalPosition[0];
         this->finalPosition[1] = finalPosition[1];
 
-        this->rotation = rotation;
+        this->rotation = isClockWise ? CLOCKWISE : COUNTER_CLOCKWISE;
         this->speedMagnitude = speedMagnitude;
-        this->radius = sqrt(pow(centerToInitialPosition[0], 2) + pow(centerToInitialPosition[1], 2));
+        this->radius = sqrt(pow(this->centerToInitialPosition[0], 2) + pow(this->centerToInitialPosition[1], 2));
 
         this->lenght = atan2(
             this->centerToInitialPosition[0] * this->centerToFinalPosition[1] - this->centerToInitialPosition[1] * this->centerToFinalPosition[0],
@@ -49,7 +49,7 @@ public:
 
         this->segmentCount = floor(fabs(0.5 * this->lenght * this->radius) / sqrt(ARC_PRECISION * (2 * this->radius - ARC_PRECISION)));
 
-        this->segmentLenght = this->lenght / this->segmentCount > 0 ? this->segmentCount : 1;
+        this->segmentLenght = this->lenght / this->segmentCount;
     }
 
     int getSegmentCount()

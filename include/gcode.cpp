@@ -17,10 +17,18 @@ public:
         String M = this->letterValue("M");
 
         double X = this->letterValue("X").toFloat();
-        // double Y = this->letterValue("Y").toFloat();
-        // double I = this->letterValue("I").toFloat();
-        // double J = this->letterValue("J").toFloat();
+        double Y = this->letterValue("Y").toFloat();
+        double Z = this->letterValue("Z").toFloat();
+        double I = this->letterValue("I").toFloat();
+        double J = this->letterValue("J").toFloat();
+        double K = this->letterValue("K").toFloat();
         double F = this->letterValue("F").toFloat();
+
+        double finalPosition[3] = {X, Y, Z};
+        double distanceToCenter[3] = {I, J, K};
+        double feedRate = F;
+
+        bool isClockWise = G == "02";
 
         if (M == "00")
         {
@@ -36,30 +44,15 @@ public:
 
         if (G == "01")
         {
-            multiStepper.linearMove(X, F);
+            multiStepper.linearMove(finalPosition, feedRate);
             return;
         }
 
-        // if (G == "02" || G == "03")
-        // {
-        //     double xCurrentPosition = (double)x0Stepper.currentPosition();
-        //     double yCurrentPosition = (double)x1Stepper.currentPosition();
-
-        //     double initialPosition[2] = {xCurrentPosition, yCurrentPosition};
-        //     double centerToInitialPosition[2] = {-I, -J};
-        //     double finalPosition[2] = {X, Y};
-        //     double speedMagnitude = F;
-
-        //     Arc::Rotation rotation = G == "02" ? Arc::Rotation::COUNTER_CLOCKWISE : Arc::Rotation::COUNTER_CLOCKWISE;
-        //     Arc arc = Arc(initialPosition, centerToInitialPosition, finalPosition, speedMagnitude, rotation);
-
-        //     int xArcAxis = 0;
-
-        //     x0Stepper.arcMove(arc, xArcAxis);
-        //     x1Stepper.arcMove(arc, xArcAxis);
-
-        //     return;
-        // }
+        if (G == "02" || G == "03")
+        {
+            multiStepper.arcMove(finalPosition, distanceToCenter, feedRate, isClockWise);
+            return;
+        }
     };
 
 private:

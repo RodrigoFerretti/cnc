@@ -59,6 +59,13 @@ public:
         this->state = distance > 0 ? MOVING_BACKWARDS : MOVING_FORWARDS;
     }
 
+    void arcMove(Arc arc, bool axis)
+    {
+        this->arc = arc;
+        this->arcAxis = axis;
+        this->currentArcSegmentNumber = 0;
+    }
+
     void limitStop()
     {
         this->state = LIMITED;
@@ -67,7 +74,7 @@ public:
 
     bool isMoving()
     {
-        return this->distanceToGo();
+        return this->state == MOVING_BACKWARDS || this->state == MOVING_FORWARDS;
     }
 
     bool canMove()
@@ -114,6 +121,8 @@ public:
             return;
         }
 
+        this->handleArcMove();
+
         this->runSpeedToPosition();
 
         if (this->state == IDLE)
@@ -139,11 +148,33 @@ private:
     };
 
     int state = IDLE;
+    int currentArcSegmentNumber;
+
+    bool arcAxis;
     bool canMoveForwards;
     bool canMoveBackwards;
 
+    Arc arc;
+
     Switch backSwitch;
     Switch frontSwitch;
+
+    void handleArcMove()
+    {
+        if (this->arc.getSegmentCount() == this->currentArcSegmentNumber)
+        {
+            return;
+        }
+
+        if (this->state != IDLE)
+        {
+            return;
+        }
+
+        Arc::Segment segment = this->arc.getSegment(this->currentArcSegmentNumber);
+        this->moveToWithSpeed(segment.position[this->arcAxis], segment.speed[this->arcAxis]);
+        this->currentArcSegmentNumber += 1;
+    }
 };
 
 Stepper x0Stepper(X0_PUL_PIN, X0_DIR_PIN, X0_BSW_PIN, X0_FSW_PIN);
