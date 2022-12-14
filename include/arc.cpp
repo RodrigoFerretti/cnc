@@ -1,16 +1,11 @@
-#include <Arduino.h>
+#include <math.h>
 
+#define _PI 3.14159265358979323846
 #define ARC_PRECISION 0.01
 
 class Arc
 {
 public:
-    enum Rotation
-    {
-        CLOCKWISE,
-        COUNTER_CLOCKWISE,
-    };
-
     struct Segment
     {
         double position[2];
@@ -19,7 +14,7 @@ public:
 
     Arc(){};
 
-    Arc(double initialPosition[2], double initialDistanceToCenter[2], double finalPosition[2], double speedMagnitude, bool isClockWise)
+    Arc(double initialPosition[2], double initialDistanceToCenter[2], double finalPosition[2], double speedMagnitude, bool isClockWise, double arcPrecision = ARC_PRECISION)
     {
         this->initialPosition[0] = initialPosition[0];
         this->initialPosition[1] = initialPosition[1];
@@ -30,8 +25,8 @@ public:
         this->centerPosition[0] = this->initialPosition[0] + initialDistanceToCenter[0];
         this->centerPosition[1] = this->initialPosition[1] + initialDistanceToCenter[1];
 
-        this->centerToFinalPosition[0] = this->finalPosition[0] - this->centerPosition[0];
-        this->centerToFinalPosition[1] = this->finalPosition[1] - this->centerPosition[1];
+        this->centerToFinalPosition[0] = finalPosition[0] - this->centerPosition[0];
+        this->centerToFinalPosition[1] = finalPosition[1] - this->centerPosition[1];
 
         this->finalPosition[0] = finalPosition[0];
         this->finalPosition[1] = finalPosition[1];
@@ -44,10 +39,10 @@ public:
             this->centerToInitialPosition[0] * this->centerToFinalPosition[1] - this->centerToInitialPosition[1] * this->centerToFinalPosition[0],
             this->centerToInitialPosition[0] * this->centerToFinalPosition[0] + this->centerToInitialPosition[1] * this->centerToFinalPosition[1]);
 
-        this->lenght = this->rotation == CLOCKWISE && lenght >= 0 ? lenght - 2 * PI : lenght;
-        this->lenght = this->rotation == COUNTER_CLOCKWISE && lenght <= 0 ? lenght + 2 * PI : lenght;
+        this->lenght = this->rotation == CLOCKWISE && lenght >= 0 ? lenght - 2 * _PI : lenght;
+        this->lenght = this->rotation == COUNTER_CLOCKWISE && lenght <= 0 ? lenght + 2 * _PI : lenght;
 
-        this->segmentCount = floor(fabs(0.5 * this->lenght * this->radius) / sqrt(ARC_PRECISION * (2 * this->radius - ARC_PRECISION)));
+        this->segmentCount = floor(fabs(0.5 * this->lenght * this->radius) / sqrt(arcPrecision * (2 * this->radius - arcPrecision)));
 
         this->segmentLenght = this->lenght / this->segmentCount;
     }
@@ -80,6 +75,12 @@ public:
     }
 
 private:
+    enum Rotation
+    {
+        CLOCKWISE,
+        COUNTER_CLOCKWISE,
+    };
+
     int segmentCount;
 
     double lenght;
