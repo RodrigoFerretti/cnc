@@ -1,6 +1,6 @@
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
-#include <wifi.cpp>
+#include "wifi.cpp"
 #include "gcode.cpp"
 
 class WebSocket : public AsyncWebSocket
