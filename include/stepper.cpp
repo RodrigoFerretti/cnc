@@ -64,10 +64,10 @@ public:
         state = distance > 0 ? MOVING_BACKWARDS : MOVING_FORWARDS;
     }
 
-    void arcMove(Arc arc, bool axis)
+    void arcMove(Arc arc, uint8_t arcAxis)
     {
         arc = arc;
-        arcAxis = axis;
+        arcAxis = arcAxis;
         arcPointIndex = 0;
     }
 
@@ -155,11 +155,11 @@ private:
     bool canMoveForwards;
     bool canMoveBackwards;
 
-    int arcAxis;
-    int arcPointIndex;
+    uint8_t arcAxis;
+    uint8_t state = IDLE;
+    uint64_t arcPointIndex;
 
     Arc arc;
-    State state = IDLE;
     DigitalInput backSwitch;
     DigitalInput frontSwitch;
 

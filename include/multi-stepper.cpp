@@ -16,23 +16,23 @@ public:
 
     void linearMove(vector<double> position, double feedRate)
     {
-        if (this->isMoving())
+        if (isMoving())
         {
             return;
         }
 
-        if (!this->canMove())
+        if (!canMove())
         {
             return;
         }
 
-        this->x0Stepper.moveToWithSpeed(position[0], feedRate);
-        this->x1Stepper.moveToWithSpeed(position[0], feedRate);
-        // this->y0Stepper.moveToWithSpeed(position[1], feedRate);
-        // this->z0Stepper.moveToWithSpeed(position[2], feedRate);
+        x0Stepper.moveToWithSpeed(position[0], feedRate);
+        x1Stepper.moveToWithSpeed(position[0], feedRate);
+        // y0Stepper.moveToWithSpeed(position[1], feedRate);
+        // z0Stepper.moveToWithSpeed(position[2], feedRate);
     }
 
-    void arcMove(vector<double> finalPosition, vector<double> centerOffset, double feedRate, bool isClockWise)
+    void arcMove(vector<double> centerOffset, vector<double> finalPosition, double feedRate, bool isClockWise)
     {
         vector<double> initialPosition = {
             (double)x0Stepper.currentPosition(),
@@ -48,41 +48,41 @@ public:
 
         Arc arc = Arc(initialPosition, centerPosition, finalPosition, feedRate, isClockWise, ARC_TOLERANCE);
 
-        this->x0Stepper.arcMove(arc, 0);
-        this->x1Stepper.arcMove(arc, 0);
-        // this->y0Stepper.arcMove(arc, 1);
-        // this->z0Stepper.arcMove(arc, 2);
+        x0Stepper.arcMove(arc, 0);
+        x1Stepper.arcMove(arc, 0);
+        // y0Stepper.arcMove(arc, 1);
+        // z0Stepper.arcMove(arc, 2);
     }
 
     void pause()
     {
-        this->x0Stepper.pause();
-        this->x1Stepper.pause();
-        // this->y0Stepper.pause();
-        // this->z0Stepper.pause();
+        x0Stepper.pause();
+        x1Stepper.pause();
+        // y0Stepper.pause();
+        // z0Stepper.pause();
     }
 
     void resume()
     {
-        this->x0Stepper.resume();
-        this->x1Stepper.resume();
-        // this->y0Stepper.resume();
-        // this->z0Stepper.resume();
+        x0Stepper.resume();
+        x1Stepper.resume();
+        // y0Stepper.resume();
+        // z0Stepper.resume();
     }
 
     void step()
     {
-        this->readSwitches();
+        readSwitches();
 
-        if (!this->canMove())
+        if (!canMove())
         {
-            return this->limitStop();
+            return limitStop();
         }
 
-        this->x0Stepper.step();
-        this->x1Stepper.step();
-        // this->y0Stepper.step();
-        // this->z0Stepper.step();
+        x0Stepper.step();
+        x1Stepper.step();
+        // y0Stepper.step();
+        // z0Stepper.step();
     }
 
 private:
@@ -93,10 +93,10 @@ private:
 
     bool isMoving()
     {
-        bool x0IsMoving = this->x0Stepper.isMoving();
-        bool x1IsMoving = this->x1Stepper.isMoving();
-        // bool y0IsMoving = this->y0Stepper.isMoving();
-        // bool z0IsMoving = this->z0Stepper.isMoving();
+        bool x0IsMoving = x0Stepper.isMoving();
+        bool x1IsMoving = x1Stepper.isMoving();
+        // bool y0IsMoving = y0Stepper.isMoving();
+        // bool z0IsMoving = z0Stepper.isMoving();
 
         bool isMoving = x0IsMoving || x1IsMoving /* || y0IsMoving || z0IsMoving */;
 
@@ -105,18 +105,18 @@ private:
 
     void limitStop()
     {
-        this->x0Stepper.limitStop();
-        this->x1Stepper.limitStop();
-        // this->y0Stepper.limitStop();
-        // this->z0Stepper.limitStop();
+        x0Stepper.limitStop();
+        x1Stepper.limitStop();
+        // y0Stepper.limitStop();
+        // z0Stepper.limitStop();
     }
 
     bool canMove()
     {
-        bool x0CanMove = this->x0Stepper.canMove();
-        bool x1CanMove = this->x1Stepper.canMove();
-        // bool y0CanMove = this->y0Stepper.canMove();
-        // bool z0CanMove = this->z0Stepper.canMove();
+        bool x0CanMove = x0Stepper.canMove();
+        bool x1CanMove = x1Stepper.canMove();
+        // bool y0CanMove = y0Stepper.canMove();
+        // bool z0CanMove = z0Stepper.canMove();
 
         bool canMove = x0CanMove && x1CanMove /* && y0CanMove && z0CanMove */;
 
@@ -125,10 +125,10 @@ private:
 
     void readSwitches()
     {
-        this->x0Stepper.readSwitches();
-        this->x1Stepper.readSwitches();
-        // this->y0Stepper.readSwitches();
-        // this->z0Stepper.readSwitches();
+        x0Stepper.readSwitches();
+        x1Stepper.readSwitches();
+        // y0Stepper.readSwitches();
+        // z0Stepper.readSwitches();
     }
 };
 

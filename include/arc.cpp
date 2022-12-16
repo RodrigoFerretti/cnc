@@ -36,12 +36,12 @@ public:
         segmentAngle = angle / pointsLenght;
     }
 
-    int getPointsLenght()
+    uint64_t getPointsLenght()
     {
         return pointsLenght;
     };
 
-    Arc::Point getPoint(int index)
+    Arc::Point getPoint(uint64_t index)
     {
         double cosSegment = cos(index * segmentAngle);
         double sinSegment = sin(index * segmentAngle);
@@ -63,13 +63,14 @@ public:
     }
 
 private:
-    int pointsLenght;
+    uint64_t pointsLenght;
+
+    vector<double> initialPosition;
+    vector<double> centerPosition;
+    vector<double> finalPosition;
 
     double angle;
     double radius;
     double velocity;
     double segmentAngle;
-    vector<double> finalPosition;
-    vector<double> centerPosition;
-    vector<double> initialPosition;
 };

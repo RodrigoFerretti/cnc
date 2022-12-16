@@ -60,7 +60,7 @@ public:
 
         if (G == "02" || G == "03")
         {
-            multiStepper.arcMove(finalPosition, centerOffset, feedRate, isClockWise);
+            multiStepper.arcMove(centerOffset, finalPosition, feedRate, isClockWise);
             return;
         }
     };
