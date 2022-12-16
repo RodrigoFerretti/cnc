@@ -46,14 +46,9 @@ public:
         double cosSegment = cos(index * segmentAngle);
         double sinSegment = sin(index * segmentAngle);
 
-        double centerToSegmentPosition[2] = {
-            (initialPosition[0] - centerPosition[0]) * cosSegment - (initialPosition[1] - centerPosition[1]) * sinSegment,
-            (initialPosition[0] - centerPosition[0]) * sinSegment + (initialPosition[1] - centerPosition[1]) * cosSegment,
-        };
-
         vector<double> pointPosition = {
-            centerPosition[0] + centerToSegmentPosition[0],
-            centerPosition[1] + centerToSegmentPosition[1],
+            centerPosition[0] + ((initialPosition[0] - centerPosition[0]) * cosSegment - (initialPosition[1] - centerPosition[1]) * sinSegment),
+            centerPosition[1] + ((initialPosition[0] - centerPosition[0]) * sinSegment + (initialPosition[1] - centerPosition[1]) * cosSegment),
         };
 
         vector<double> pointVelocity = {
