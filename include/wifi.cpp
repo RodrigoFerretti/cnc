@@ -12,8 +12,8 @@ public:
 
     void setup()
     {
-        this->configureStaticIP();
-        this->connect();
+        configureStaticIP();
+        connect();
     }
 
 private:

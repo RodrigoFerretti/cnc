@@ -13,15 +13,15 @@ public:
 
     void setup()
     {
-        this->on("/", HTTP_GET, [](AsyncWebServerRequest *request)
-                 { request->send(200, "text/plain", "Hello, world"); });
+        on("/", HTTP_GET, [](AsyncWebServerRequest *request)
+           { request->send(200, "text/plain", "Hello, world"); });
 
-        this->onNotFound([](AsyncWebServerRequest *request)
-                         { request->send(404, "text/plain", "Not found"); });
+        onNotFound([](AsyncWebServerRequest *request)
+                   { request->send(404, "text/plain", "Not found"); });
 
-        this->addHandler(&webSocket);
+        addHandler(&webSocket);
 
-        this->begin();
+        begin();
     }
 };
 

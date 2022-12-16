@@ -7,26 +7,35 @@ public:
     {
     }
 
-    GCode(String command)
+    GCode(String command) : command{command}
     {
-        this->command = command;
     }
 
     void run()
     {
-        String G = this->letterValue("G");
-        String M = this->letterValue("M");
+        String G = letterValue("G");
+        String M = letterValue("M");
 
-        double X = this->letterValue("X").toFloat();
-        double Y = this->letterValue("Y").toFloat();
-        double Z = this->letterValue("Z").toFloat();
-        double I = this->letterValue("I").toFloat();
-        double J = this->letterValue("J").toFloat();
-        double K = this->letterValue("K").toFloat();
-        double F = this->letterValue("F").toFloat();
+        double X = letterValue("X").toFloat();
+        double Y = letterValue("Y").toFloat();
+        double Z = letterValue("Z").toFloat();
+        double I = letterValue("I").toFloat();
+        double J = letterValue("J").toFloat();
+        double K = letterValue("K").toFloat();
+        double F = letterValue("F").toFloat();
 
-        double finalPosition[3] = {X, Y, Z};
-        double distanceToCenter[3] = {I, J, K};
+        vector<double> finalPosition = {
+            X,
+            Y,
+            Z,
+        };
+
+        vector<double> centerOffset = {
+            I,
+            J,
+            K,
+        };
+
         double feedRate = F;
 
         bool isClockWise = G == "02";
@@ -51,7 +60,7 @@ public:
 
         if (G == "02" || G == "03")
         {
-            multiStepper.arcMove(finalPosition, distanceToCenter, feedRate, isClockWise);
+            multiStepper.arcMove(finalPosition, centerOffset, feedRate, isClockWise);
             return;
         }
     };
@@ -61,8 +70,8 @@ private:
 
     String letterValue(String letter)
     {
-        this->command = this->command + " ";
-        int letterIndex = this->command.indexOf(letter);
-        return ((letterIndex != -1) ? this->command.substring(letterIndex + 1, this->command.substring(letterIndex, this->command.length()).indexOf(" ") + letterIndex) : "");
+        command = command + " ";
+        int letterIndex = command.indexOf(letter);
+        return ((letterIndex != -1) ? command.substring(letterIndex + 1, command.substring(letterIndex, command.length()).indexOf(" ") + letterIndex) : "");
     }
 };

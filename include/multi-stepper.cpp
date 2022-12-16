@@ -1,5 +1,7 @@
 #include "stepper.cpp"
 
+#define ARC_TOLERANCE 0.01
+
 class MultiStepper
 {
 public:
@@ -7,15 +9,12 @@ public:
     {
     }
 
-    MultiStepper(Stepper x0Stepper, Stepper x1Stepper /*, Stepper y0Stepper, Stepper z0Stepper*/)
+    MultiStepper(Stepper x0Stepper, Stepper x1Stepper /*, Stepper y0Stepper, Stepper z0Stepper */)
+        : x0Stepper{x0Stepper}, x1Stepper{x1Stepper} /*, y0Stepper{y0Stepper}, z0Stepper{z0Stepper} */
     {
-        this->x0Stepper = x0Stepper;
-        this->x1Stepper = x1Stepper;
-        // this->y0Stepper = y0Stepper;
-        // this->z0Stepper = z0Stepper;
     }
 
-    void linearMove(double position[3], double feedRate)
+    void linearMove(vector<double> position, double feedRate)
     {
         if (this->isMoving())
         {
@@ -33,17 +32,26 @@ public:
         // this->z0Stepper.moveToWithSpeed(position[2], feedRate);
     }
 
-    void arcMove(double finalPosition[3], double distanceToCenter[3], double feedRate, bool isClockWise)
+    void arcMove(vector<double> finalPosition, vector<double> centerOffset, double feedRate, bool isClockWise)
     {
-        double currentPosition[3] = {
-            (double)this->x0Stepper.currentPosition(),
+        vector<double> initialPosition = {
+            (double)x0Stepper.currentPosition(),
+            // y0Stepper.currentPosition(),
+            // z0Stepper.currentPosition(),
         };
 
-        Arc arc(currentPosition, distanceToCenter, finalPosition, feedRate, isClockWise);
+        vector<double> centerPosition = {
+            initialPosition[0] + centerOffset[0],
+            // initialPosition[1] + centerOffset[1],
+            // initialPosition[2] + centerOffset[2],
+        };
+
+        Arc arc = Arc(initialPosition, centerPosition, finalPosition, feedRate, isClockWise, ARC_TOLERANCE);
 
         this->x0Stepper.arcMove(arc, 0);
         this->x1Stepper.arcMove(arc, 0);
         // this->y0Stepper.arcMove(arc, 1);
+        // this->z0Stepper.arcMove(arc, 2);
     }
 
     void pause()

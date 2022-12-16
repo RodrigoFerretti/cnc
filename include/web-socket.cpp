@@ -12,7 +12,7 @@ public:
 
     void setup()
     {
-        this->onEvent(handler);
+        onEvent(handler);
     }
 
 private:

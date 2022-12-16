@@ -1,100 +1,80 @@
 #include <math.h>
+#include "vector"
 
-#define _PI 3.14159265358979323846
-#define ARC_PRECISION 0.01
+#define PI_ 3.14159265358979323846
+
+using namespace std;
 
 class Arc
 {
+
 public:
-    struct Segment
+    struct Point
     {
-        double position[2];
-        double speed[2];
+        vector<double> position;
+        vector<double> velocity;
     };
 
     Arc()
     {
     }
 
-    Arc(double initialPosition[2], double initialDistanceToCenter[2], double finalPosition[2], double speedMagnitude, bool isClockWise, double arcPrecision = ARC_PRECISION)
+    Arc(vector<double> initialPosition, vector<double> centerPosition, vector<double> finalPosition, double velocity, bool isClockWise, double arcTolerance)
+        : initialPosition{initialPosition}, centerPosition{centerPosition}, finalPosition{finalPosition}, velocity{velocity}
     {
-        this->initialPosition[0] = initialPosition[0];
-        this->initialPosition[1] = initialPosition[1];
+        radius = sqrt(pow(initialPosition[0] - centerPosition[0], 2) + pow(initialPosition[1] - centerPosition[1], 2));
 
-        this->centerToInitialPosition[0] = -initialDistanceToCenter[0];
-        this->centerToInitialPosition[1] = -initialDistanceToCenter[1];
+        lenght = atan2(
+            (initialPosition[0] - centerPosition[0]) * (finalPosition[1] - centerPosition[1]) - (initialPosition[1] - centerPosition[1]) * (finalPosition[0] - centerPosition[0]),
+            (initialPosition[0] - centerPosition[0]) * (finalPosition[0] - centerPosition[0]) + (initialPosition[1] - centerPosition[1]) * (finalPosition[1] - centerPosition[1]));
 
-        this->centerPosition[0] = this->initialPosition[0] + initialDistanceToCenter[0];
-        this->centerPosition[1] = this->initialPosition[1] + initialDistanceToCenter[1];
+        lenght = isClockWise && lenght >= 0 ? lenght - 2 * PI_ : lenght;
+        lenght = !isClockWise && lenght <= 0 ? lenght + 2 * PI_ : lenght;
 
-        this->centerToFinalPosition[0] = finalPosition[0] - this->centerPosition[0];
-        this->centerToFinalPosition[1] = finalPosition[1] - this->centerPosition[1];
+        pointCount = floor(fabs(0.5 * lenght * radius) / sqrt(arcTolerance * (2 * radius - arcTolerance)));
 
-        this->finalPosition[0] = finalPosition[0];
-        this->finalPosition[1] = finalPosition[1];
-
-        this->rotation = isClockWise ? CLOCKWISE : COUNTER_CLOCKWISE;
-        this->speedMagnitude = speedMagnitude;
-        this->radius = sqrt(pow(this->centerToInitialPosition[0], 2) + pow(this->centerToInitialPosition[1], 2));
-
-        this->lenght = atan2(
-            this->centerToInitialPosition[0] * this->centerToFinalPosition[1] - this->centerToInitialPosition[1] * this->centerToFinalPosition[0],
-            this->centerToInitialPosition[0] * this->centerToFinalPosition[0] + this->centerToInitialPosition[1] * this->centerToFinalPosition[1]);
-
-        this->lenght = this->rotation == CLOCKWISE && lenght >= 0 ? lenght - 2 * _PI : lenght;
-        this->lenght = this->rotation == COUNTER_CLOCKWISE && lenght <= 0 ? lenght + 2 * _PI : lenght;
-
-        this->segmentCount = floor(fabs(0.5 * this->lenght * this->radius) / sqrt(arcPrecision * (2 * this->radius - arcPrecision)));
-
-        this->segmentLenght = this->lenght / this->segmentCount;
+        segmentLenght = lenght / pointCount;
     }
 
-    int getSegmentCount()
+    int getPointCount()
     {
-        return this->segmentCount;
+        return pointCount;
     };
 
-    Arc::Segment getSegment(int index)
+    Arc::Point getPoint(int index)
     {
-        double cosSegment = cos(index * this->segmentLenght);
-        double sinSegment = sin(index * this->segmentLenght);
+        double cosSegment = cos(index * segmentLenght);
+        double sinSegment = sin(index * segmentLenght);
 
         double centerToSegmentPosition[2] = {
-            this->centerToInitialPosition[0] * cosSegment - this->centerToInitialPosition[1] * sinSegment,
-            this->centerToInitialPosition[0] * sinSegment + this->centerToInitialPosition[1] * cosSegment,
+            (initialPosition[0] - centerPosition[0]) * cosSegment - (initialPosition[1] - centerPosition[1]) * sinSegment,
+            (initialPosition[0] - centerPosition[0]) * sinSegment + (initialPosition[1] - centerPosition[1]) * cosSegment,
+        };
+
+        vector<double> pointPosition = {
+            centerPosition[0] + centerToSegmentPosition[0],
+            centerPosition[1] + centerToSegmentPosition[1],
+        };
+
+        vector<double> pointVelocity = {
+            fabs(sinSegment) * velocity,
+            fabs(cosSegment) * velocity,
         };
 
         return {
-            .position = {
-                this->centerPosition[0] + centerToSegmentPosition[0],
-                this->centerPosition[1] + centerToSegmentPosition[1],
-            },
-            .speed = {
-                fabs(sinSegment) * this->speedMagnitude,
-                fabs(cosSegment) * this->speedMagnitude,
-            },
+            .position = pointPosition,
+            .velocity = pointVelocity,
         };
     }
 
 private:
-    enum Rotation
-    {
-        CLOCKWISE,
-        COUNTER_CLOCKWISE,
-    };
-
-    int segmentCount;
+    int pointCount;
 
     double lenght;
     double radius;
+    double velocity;
     double segmentLenght;
-    double speedMagnitude;
-    double finalPosition[2];
-    double centerPosition[2];
-    double initialPosition[2];
-    double currentPosition[2];
-    double centerToFinalPosition[2];
-    double centerToInitialPosition[2];
-
-    Arc::Rotation rotation;
+    vector<double> finalPosition;
+    vector<double> centerPosition;
+    vector<double> initialPosition;
 };
