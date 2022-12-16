@@ -24,27 +24,27 @@ public:
     {
         radius = sqrt(pow(initialPosition[0] - centerPosition[0], 2) + pow(initialPosition[1] - centerPosition[1], 2));
 
-        lenght = atan2(
+        angle = atan2(
             (initialPosition[0] - centerPosition[0]) * (finalPosition[1] - centerPosition[1]) - (initialPosition[1] - centerPosition[1]) * (finalPosition[0] - centerPosition[0]),
             (initialPosition[0] - centerPosition[0]) * (finalPosition[0] - centerPosition[0]) + (initialPosition[1] - centerPosition[1]) * (finalPosition[1] - centerPosition[1]));
 
-        lenght = isClockWise && lenght >= 0 ? lenght - 2 * PI_ : lenght;
-        lenght = !isClockWise && lenght <= 0 ? lenght + 2 * PI_ : lenght;
+        angle = isClockWise && angle >= 0 ? angle - 2 * PI_ : angle;
+        angle = !isClockWise && angle <= 0 ? angle + 2 * PI_ : angle;
 
-        pointCount = floor(fabs(0.5 * lenght * radius) / sqrt(arcTolerance * (2 * radius - arcTolerance)));
+        pointsLenght = floor(fabs(0.5 * angle * radius) / sqrt(arcTolerance * (2 * radius - arcTolerance)));
 
-        segmentLenght = lenght / pointCount;
+        segmentAngle = angle / pointsLenght;
     }
 
-    int getPointCount()
+    int getPointsLenght()
     {
-        return pointCount;
+        return pointsLenght;
     };
 
     Arc::Point getPoint(int index)
     {
-        double cosSegment = cos(index * segmentLenght);
-        double sinSegment = sin(index * segmentLenght);
+        double cosSegment = cos(index * segmentAngle);
+        double sinSegment = sin(index * segmentAngle);
 
         double centerToSegmentPosition[2] = {
             (initialPosition[0] - centerPosition[0]) * cosSegment - (initialPosition[1] - centerPosition[1]) * sinSegment,
@@ -68,12 +68,12 @@ public:
     }
 
 private:
-    int pointCount;
+    int pointsLenght;
 
-    double lenght;
+    double angle;
     double radius;
     double velocity;
-    double segmentLenght;
+    double segmentAngle;
     vector<double> finalPosition;
     vector<double> centerPosition;
     vector<double> initialPosition;

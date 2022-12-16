@@ -15,7 +15,7 @@ public:
 
     uint8_t safeRead()
     {
-        bool currentRead = digitalRead(pin);
+        uint8_t currentRead = digitalRead(pin);
 
         changeTime = currentRead == previousRead ? changeTime : millis();
         previousRead = currentRead;

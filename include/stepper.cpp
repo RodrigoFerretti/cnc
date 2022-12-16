@@ -68,7 +68,7 @@ public:
     {
         arc = arc;
         arcAxis = axis;
-        currentArcSegmentNumber = 0;
+        arcPointIndex = 0;
     }
 
     void limitStop()
@@ -152,21 +152,20 @@ private:
         MOVING_BACKWARDS,
     };
 
-    int state = IDLE;
-    int currentArcSegmentNumber;
-
-    bool arcAxis;
     bool canMoveForwards;
     bool canMoveBackwards;
 
-    Arc arc;
+    int arcAxis;
+    int arcPointIndex;
 
+    Arc arc;
+    State state = IDLE;
     DigitalInput backSwitch;
     DigitalInput frontSwitch;
 
     void handleArcMove()
     {
-        if (arc.getPointCount() == currentArcSegmentNumber)
+        if (arc.getPointsLenght() == arcPointIndex)
         {
             return;
         }
@@ -176,9 +175,9 @@ private:
             return;
         }
 
-        Arc::Point point = arc.getPoint(currentArcSegmentNumber);
-        moveToWithSpeed(point.position[arcAxis], point.velocity[arcAxis]);
-        currentArcSegmentNumber += 1;
+        Arc::Point arcPoint = arc.getPoint(arcPointIndex);
+        moveToWithSpeed(arcPoint.position[arcAxis], arcPoint.velocity[arcAxis]);
+        arcPointIndex += 1;
     }
 };
 

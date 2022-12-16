@@ -15,13 +15,13 @@ void clockWiseCircle()
 
     Arc arc = Arc(initialPosition, centerPosition, finalPosition, speedMagnitude, isClockWise, arcPrecision);
 
-    int segmentCount = arc.getPointCount();
+    int arcPointsLenght = arc.getPointsLenght();
 
-    Arc::Point segment = arc.getPoint(segmentCount / 2);
+    Arc::Point arcMiddlePoint = arc.getPoint(arcPointsLenght / 2);
 
-    TEST_ASSERT_EQUAL(segmentCount, 3512);
-    TEST_ASSERT_EQUAL(segment.position[0], 100000);
-    TEST_ASSERT_EQUAL(segment.position[1], 0);
+    TEST_ASSERT_EQUAL(arcPointsLenght, 3512);
+    TEST_ASSERT_EQUAL(arcMiddlePoint.position[0], 100000);
+    TEST_ASSERT_EQUAL(arcMiddlePoint.position[1], 0);
 }
 
 void counterClockWiseHalfCircle()
@@ -36,13 +36,13 @@ void counterClockWiseHalfCircle()
 
     Arc arc = Arc(initialPosition, centerPosition, finalPosition, speedMagnitude, isClockWise, arcPrecision);
 
-    int segmentCount = arc.getPointCount();
+    int arcPointsLenght = arc.getPointsLenght();
 
-    Arc::Point segment = arc.getPoint(segmentCount / 2);
+    Arc::Point arcMiddlePoint = arc.getPoint(arcPointsLenght / 2);
 
-    TEST_ASSERT_EQUAL(segmentCount, 1756);
-    TEST_ASSERT_EQUAL(segment.position[0], 70000);
-    TEST_ASSERT_EQUAL(segment.position[1], -30000);
+    TEST_ASSERT_EQUAL(arcPointsLenght, 1756);
+    TEST_ASSERT_EQUAL(arcMiddlePoint.position[0], 70000);
+    TEST_ASSERT_EQUAL(arcMiddlePoint.position[1], -30000);
 }
 
 int main(int argc, char **argv)
