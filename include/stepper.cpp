@@ -14,12 +14,12 @@
 #define X1_BSW_PIN 36
 #define X1_FSW_PIN 39
 
+#define MIN_SPEED 0.01
 #define MAX_SPEED 15000
 #define ACCELERATION 20000
-#define MIN_VELOCITY_STEP 0.01
 
-#define DEBOUNCE_TIME 100
 #define SWITCH_SAFE_VALUE 1
+#define SWITCH_DEBOUNCE_TIME 100
 
 class Stepper : public AccelStepper
 {
@@ -34,13 +34,13 @@ public:
         setMaxSpeed(MAX_SPEED);
         setAcceleration(ACCELERATION);
 
-        backSwitch = DigitalInput(backSwitchPin, INPUT_PULLDOWN, SWITCH_SAFE_VALUE, DEBOUNCE_TIME);
-        frontSwitch = DigitalInput(frontSwitchPin, INPUT_PULLDOWN, SWITCH_SAFE_VALUE, DEBOUNCE_TIME);
+        backSwitch = DigitalInput(backSwitchPin, INPUT_PULLDOWN, SWITCH_SAFE_VALUE, SWITCH_DEBOUNCE_TIME);
+        frontSwitch = DigitalInput(frontSwitchPin, INPUT_PULLDOWN, SWITCH_SAFE_VALUE, SWITCH_DEBOUNCE_TIME);
     }
 
-    void moveToWithSpeed(long position, double speed)
+    void linearMove(long position, double speed)
     {
-        if (speed < MIN_VELOCITY_STEP)
+        if (speed < MIN_SPEED)
         {
             return;
         }
@@ -71,7 +71,7 @@ public:
         arcPointIndex = 0;
     }
 
-    void limitStop()
+    void hardStop()
     {
         state = LIMITED;
         moveTo(currentPosition());
@@ -82,15 +82,15 @@ public:
         return state == MOVING_BACKWARDS || state == MOVING_FORWARDS;
     }
 
-    bool canMove()
+    bool switchHasTriggered()
     {
-        return canMoveBackwards && canMoveForwards;
+        return !(canMoveForwards && canMoveBackwards);
     }
 
     void readSwitches()
     {
-        canMoveBackwards = backSwitch.safeRead();
         canMoveForwards = frontSwitch.safeRead();
+        canMoveBackwards = backSwitch.safeRead();
     }
 
     void pause()
@@ -155,8 +155,8 @@ private:
     bool canMoveForwards;
     bool canMoveBackwards;
 
-    uint8_t arcAxis;
     uint8_t state = IDLE;
+    uint8_t arcAxis;
     uint64_t arcPointIndex;
 
     Arc arc;
@@ -165,7 +165,7 @@ private:
 
     void handleArcMove()
     {
-        if (arc.getPointsLenght() == arcPointIndex)
+        if (arc.pointsLenght() == arcPointIndex)
         {
             return;
         }
@@ -175,8 +175,8 @@ private:
             return;
         }
 
-        Arc::Point arcPoint = arc.getPoint(arcPointIndex);
-        moveToWithSpeed(arcPoint.position[arcAxis], arcPoint.velocity[arcAxis]);
+        Arc::Point arcPoint = arc.point(arcPointIndex);
+        linearMove(arcPoint.position[arcAxis], arcPoint.velocity[arcAxis]);
         arcPointIndex += 1;
     }
 };

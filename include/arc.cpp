@@ -1,7 +1,7 @@
 #include <math.h>
 #include <vector>
 
-#define PI_ 3.14159265358979323846
+#define _PI 3.14159265358979323846
 
 using namespace std;
 
@@ -28,32 +28,32 @@ public:
             (initialPosition[0] - centerPosition[0]) * (finalPosition[1] - centerPosition[1]) - (initialPosition[1] - centerPosition[1]) * (finalPosition[0] - centerPosition[0]),
             (initialPosition[0] - centerPosition[0]) * (finalPosition[0] - centerPosition[0]) + (initialPosition[1] - centerPosition[1]) * (finalPosition[1] - centerPosition[1]));
 
-        angle = isClockWise && angle >= 0 ? angle - 2 * PI_ : angle;
-        angle = !isClockWise && angle <= 0 ? angle + 2 * PI_ : angle;
+        angle = isClockWise && angle >= 0 ? angle - 2 * _PI : angle;
+        angle = !isClockWise && angle <= 0 ? angle + 2 * _PI : angle;
 
-        pointsLenght = floor(fabs(0.5 * angle * radius) / sqrt(arcTolerance * (2 * radius - arcTolerance)));
+        _pointsLenght = floor(fabs(0.5 * angle * radius) / sqrt(arcTolerance * (2 * radius - arcTolerance)));
 
-        segmentAngle = angle / pointsLenght;
+        segmentAngle = angle / _pointsLenght;
     }
 
-    uint64_t getPointsLenght()
+    uint64_t pointsLenght()
     {
-        return pointsLenght;
+        return _pointsLenght;
     };
 
-    Arc::Point getPoint(uint64_t index)
+    Arc::Point point(uint64_t index)
     {
-        double cosSegment = cos(index * segmentAngle);
-        double sinSegment = sin(index * segmentAngle);
+        double segmentCos = cos(index * segmentAngle);
+        double segmentSin = sin(index * segmentAngle);
 
         vector<double> pointPosition = {
-            centerPosition[0] + ((initialPosition[0] - centerPosition[0]) * cosSegment - (initialPosition[1] - centerPosition[1]) * sinSegment),
-            centerPosition[1] + ((initialPosition[0] - centerPosition[0]) * sinSegment + (initialPosition[1] - centerPosition[1]) * cosSegment),
+            centerPosition[0] + ((initialPosition[0] - centerPosition[0]) * segmentCos - (initialPosition[1] - centerPosition[1]) * segmentSin),
+            centerPosition[1] + ((initialPosition[0] - centerPosition[0]) * segmentSin + (initialPosition[1] - centerPosition[1]) * segmentCos),
         };
 
         vector<double> pointVelocity = {
-            fabs(sinSegment) * velocity,
-            fabs(cosSegment) * velocity,
+            fabs(segmentSin) * velocity,
+            fabs(segmentCos) * velocity,
         };
 
         return {
@@ -63,7 +63,7 @@ public:
     }
 
 private:
-    uint64_t pointsLenght;
+    uint64_t _pointsLenght;
 
     vector<double> initialPosition;
     vector<double> centerPosition;

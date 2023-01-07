@@ -15,9 +15,9 @@ void clockWiseCircle()
 
     Arc arc = Arc(initialPosition, centerPosition, finalPosition, speedMagnitude, isClockWise, arcPrecision);
 
-    int arcPointsLenght = arc.getPointsLenght();
+    int arcPointsLenght = arc.pointsLenght();
 
-    Arc::Point arcMiddlePoint = arc.getPoint(arcPointsLenght / 2);
+    Arc::Point arcMiddlePoint = arc.point(arcPointsLenght / 2);
 
     TEST_ASSERT_EQUAL(arcPointsLenght, 3512);
     TEST_ASSERT_EQUAL(arcMiddlePoint.position[0], 100000);
@@ -36,9 +36,9 @@ void counterClockWiseHalfCircle()
 
     Arc arc = Arc(initialPosition, centerPosition, finalPosition, speedMagnitude, isClockWise, arcPrecision);
 
-    int arcPointsLenght = arc.getPointsLenght();
+    int arcPointsLenght = arc.pointsLenght();
 
-    Arc::Point arcMiddlePoint = arc.getPoint(arcPointsLenght / 2);
+    Arc::Point arcMiddlePoint = arc.point(arcPointsLenght / 2);
 
     TEST_ASSERT_EQUAL(arcPointsLenght, 1756);
     TEST_ASSERT_EQUAL(arcMiddlePoint.position[0], 70000);

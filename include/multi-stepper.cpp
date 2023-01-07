@@ -14,25 +14,20 @@ public:
     {
     }
 
-    void linearMove(vector<double> position, double feedRate)
+    bool canMove()
     {
-        if (isMoving())
-        {
-            return;
-        }
-
-        if (!canMove())
-        {
-            return;
-        }
-
-        x0Stepper.moveToWithSpeed(position[0], feedRate);
-        x1Stepper.moveToWithSpeed(position[0], feedRate);
-        // y0Stepper.moveToWithSpeed(position[1], feedRate);
-        // z0Stepper.moveToWithSpeed(position[2], feedRate);
+        return !(isMoving() || switchHasTriggered());
     }
 
-    void arcMove(vector<double> centerOffset, vector<double> finalPosition, double feedRate, bool isClockWise)
+    void linearMove(vector<double> position, double speed)
+    {
+        x0Stepper.linearMove(position[0], speed);
+        x1Stepper.linearMove(position[0], speed);
+        // y0Stepper.linearMove(position[1], speed);
+        // z0Stepper.linearMove(position[2], speed);
+    }
+
+    void arcMove(vector<double> centerOffset, vector<double> finalPosition, double speed, bool isClockWise)
     {
         vector<double> initialPosition = {
             (double)x0Stepper.currentPosition(),
@@ -46,7 +41,7 @@ public:
             // initialPosition[2] + centerOffset[2],
         };
 
-        Arc arc = Arc(initialPosition, centerPosition, finalPosition, feedRate, isClockWise, ARC_TOLERANCE);
+        Arc arc = Arc(initialPosition, centerPosition, finalPosition, speed, isClockWise, ARC_TOLERANCE);
 
         x0Stepper.arcMove(arc, 0);
         x1Stepper.arcMove(arc, 0);
@@ -74,9 +69,9 @@ public:
     {
         readSwitches();
 
-        if (!canMove())
+        if (switchHasTriggered())
         {
-            return limitStop();
+            return hardStop();
         }
 
         x0Stepper.step();
@@ -93,34 +88,30 @@ private:
 
     bool isMoving()
     {
-        bool x0IsMoving = x0Stepper.isMoving();
-        bool x1IsMoving = x1Stepper.isMoving();
-        // bool y0IsMoving = y0Stepper.isMoving();
-        // bool z0IsMoving = z0Stepper.isMoving();
-
-        bool isMoving = x0IsMoving || x1IsMoving /* || y0IsMoving || z0IsMoving */;
-
-        return isMoving;
+        return (
+            x0Stepper.isMoving() ||
+            x1Stepper.isMoving() /* ||
+            y0Stepper.isMoving() ||
+            z0Stepper.isMoving() */
+        );
     }
 
-    void limitStop()
+    void hardStop()
     {
-        x0Stepper.limitStop();
-        x1Stepper.limitStop();
-        // y0Stepper.limitStop();
-        // z0Stepper.limitStop();
+        x0Stepper.hardStop();
+        x1Stepper.hardStop();
+        // y0Stepper.hardStop();
+        // z0Stepper.hardStop();
     }
 
-    bool canMove()
+    bool switchHasTriggered()
     {
-        bool x0CanMove = x0Stepper.canMove();
-        bool x1CanMove = x1Stepper.canMove();
-        // bool y0CanMove = y0Stepper.canMove();
-        // bool z0CanMove = z0Stepper.canMove();
-
-        bool canMove = x0CanMove && x1CanMove /* && y0CanMove && z0CanMove */;
-
-        return canMove;
+        return (
+            x0Stepper.switchHasTriggered() +
+            x1Stepper.switchHasTriggered() /* +
+            y0Stepper.switchHasTriggered() +
+            z0Stepper.switchHasTriggered() */
+        );
     }
 
     void readSwitches()

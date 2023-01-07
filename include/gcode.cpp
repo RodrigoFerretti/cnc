@@ -54,12 +54,22 @@ public:
 
         if (G == "01")
         {
+            if (!multiStepper.canMove())
+            {
+                return;
+            }
+
             multiStepper.linearMove(finalPosition, feedRate);
             return;
         }
 
         if (G == "02" || G == "03")
         {
+            if (!multiStepper.canMove())
+            {
+                return;
+            }
+
             multiStepper.arcMove(centerOffset, finalPosition, feedRate, isClockWise);
             return;
         }
